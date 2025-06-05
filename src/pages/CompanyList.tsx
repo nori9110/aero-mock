@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Card, Input, Select, Button, Space, Typography, message, Modal } from 'antd';
-import { SearchOutlined, ExportOutlined, DeleteOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { SearchOutlined, DownloadOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title } = Typography;
@@ -18,7 +17,6 @@ interface Company {
 }
 
 const CompanyList: React.FC = () => {
-  const navigate = useNavigate();
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
@@ -192,7 +190,7 @@ const CompanyList: React.FC = () => {
             企業情報収集
           </Button>
           <Button
-            icon={<ExportOutlined />}
+            icon={<DownloadOutlined />}
             onClick={handleExport}
           >
             エクスポート

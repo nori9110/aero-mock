@@ -1,26 +1,21 @@
 import React, { useState } from "react";
 import {
   Table,
-  Card,
   Button,
   Space,
-  Typography,
   Input,
-  Tag,
-  Row,
-  Col,
-  Popconfirm,
+  Card,
+  Typography,
   message,
+  Modal,
 } from "antd";
 import {
   SearchOutlined,
-  PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  CopyOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 
@@ -28,44 +23,30 @@ interface Template {
   id: number;
   name: string;
   subject: string;
-  category: string;
-  lastModified: string;
+  updatedAt: string;
   createdBy: string;
-  usageCount: number;
 }
 
 const TemplateList: React.FC = () => {
-  const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
 
   // サンプルデータ
   const templates: Template[] = [
     {
       id: 1,
-      name: "新規顧客向け案内",
-      subject: "【{会社名}】新規サービスご案内",
-      category: "新規顧客",
-      lastModified: "2024-03-15 10:30:00",
-      createdBy: "山田太郎",
-      usageCount: 15,
+      name: "新規サービス案内",
+      subject: "【新サービス】ご案内",
+      updatedAt: "2024-03-15",
+      createdBy: "管理者",
     },
     {
       id: 2,
-      name: "既存顧客向けお知らせ",
-      subject: "【{会社名}】システムメンテナンスのお知らせ",
-      category: "既存顧客",
-      lastModified: "2024-03-14 16:45:00",
-      createdBy: "鈴木花子",
-      usageCount: 8,
-    },
-    {
-      id: 3,
-      name: "セミナー案内",
-      subject: "【{会社名}】新技術セミナーのご案内",
-      category: "イベント",
-      lastModified: "2024-03-13 09:15:00",
-      createdBy: "佐藤次郎",
-      usageCount: 3,
+      name: "メンテナンス通知",
+      subject: "【重要】システムメンテナンスのお知らせ",
+      updatedAt: "2024-03-14",
+      createdBy: "管理者",
     },
   ];
 
@@ -74,32 +55,18 @@ const TemplateList: React.FC = () => {
       title: "テンプレート名",
       dataIndex: "name",
       key: "name",
-      render: (text) => <a>{text}</a>,
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: "件名",
       dataIndex: "subject",
       key: "subject",
-      ellipsis: true,
     },
     {
-      title: "カテゴリー",
-      dataIndex: "category",
-      key: "category",
-      render: (category) => (
-        <Tag color={
-          category === "新規顧客" ? "blue" :
-          category === "既存顧客" ? "green" :
-          "purple"
-        }>
-          {category}
-        </Tag>
-      ),
-    },
-    {
-      title: "最終更新日時",
-      dataIndex: "lastModified",
-      key: "lastModified",
+      title: "最終更新日",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
+      sorter: (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
     },
     {
       title: "作成者",
@@ -107,91 +74,101 @@ const TemplateList: React.FC = () => {
       key: "createdBy",
     },
     {
-      title: "使用回数",
-      dataIndex: "usageCount",
-      key: "usageCount",
-      sorter: (a, b) => a.usageCount - b.usageCount,
-    },
-    {
-      title: "アクション",
+      title: "操作",
       key: "action",
       render: (_, record) => (
         <Space size="middle">
           <Button
-            type="text"
+            type="link"
             icon={<EditOutlined />}
-            onClick={() => navigate(`/templates/${record.id}`)}
-          />
-          <Button
-            type="text"
-            icon={<CopyOutlined />}
-            onClick={() => handleCopy(record)}
-          />
-          <Popconfirm
-            title="テンプレートを削除しますか？"
-            description="この操作は取り消せません。"
-            onConfirm={() => handleDelete(record.id)}
-            okText="削除"
-            cancelText="キャンセル"
+            onClick={() => handleEdit(record)}
           >
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-            />
-          </Popconfirm>
+            編集
+          </Button>
+          <Button
+            type="link"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record)}
+          >
+            削除
+          </Button>
         </Space>
       ),
     },
   ];
 
-  const handleCopy = (template: Template) => {
-    message.success(`${template.name}をコピーしました`);
+  const handleEdit = (record: Template) => {
+    // 編集処理の実装
+    console.log("編集:", record);
   };
 
-  const handleDelete = (id: number) => {
-    message.success("テンプレートを削除しました");
+  const handleDelete = (record: Template) => {
+    setSelectedTemplate(record);
+    setIsModalVisible(true);
   };
 
-  const filteredTemplates = templates.filter((template) =>
-    template.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    template.subject.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const handleModalOk = () => {
+    if (selectedTemplate) {
+      // 削除処理の実装
+      console.log("削除:", selectedTemplate);
+      message.success("テンプレートを削除しました");
+    }
+    setIsModalVisible(false);
+    setSelectedTemplate(null);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+    setSelectedTemplate(null);
+  };
 
   return (
     <div style={{ padding: "24px" }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={2}>テンプレート管理</Title>
-        </Col>
-        <Col>
+      <Title level={2}>テンプレート管理</Title>
+
+      <Card style={{ marginBottom: 16 }}>
+        <Space style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="テンプレート名で検索"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: 200 }}
+            prefix={<SearchOutlined />}
+          />
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => navigate("/templates/new")}
+            onClick={() => console.log("新規テンプレート作成")}
           >
-            新規作成
+            新規テンプレート作成
           </Button>
-        </Col>
-      </Row>
-
-      <Card>
-        <Space style={{ marginBottom: 16 }}>
-          <Input
-            placeholder="テンプレート名または件名で検索"
-            prefix={<SearchOutlined />}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300 }}
-          />
         </Space>
-
-        <Table
-          columns={columns}
-          dataSource={filteredTemplates}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-        />
       </Card>
+
+      <Table
+        columns={columns}
+        dataSource={templates}
+        rowKey="id"
+        pagination={{
+          total: templates.length,
+          pageSize: 10,
+          showSizeChanger: true,
+          showTotal: (total) => `全 ${total} 件`,
+        }}
+      />
+
+      <Modal
+        title="テンプレートの削除確認"
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
+      >
+        <p>
+          テンプレート「{selectedTemplate?.name}」を削除してもよろしいですか？
+        </p>
+        <p>この操作は取り消せません。</p>
+      </Modal>
     </div>
   );
 };
